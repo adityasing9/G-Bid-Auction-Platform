@@ -1,4 +1,4 @@
-export const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+export const CONTRACT_ADDRESS = "0xf197C5DCae3b2913700042A381B54c0E32266214";
 export const CONTRACT_ABI = [
   "function createAuction(string _title, string _description, string _assetType, uint256 _minBid, uint256 _commitDuration, uint256 _revealDuration, uint256 _antiSnipeSeconds) external returns (uint256)",
   "function commitBid(uint256 _auctionId, bytes32 _commitHash) external payable",

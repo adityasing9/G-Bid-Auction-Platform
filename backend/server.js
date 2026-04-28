@@ -23,7 +23,28 @@ async function initDB() {
             password: process.env.DB_PASSWORD || '',
             database: process.env.DB_NAME || 'auction_db'
         });
-        console.log('✅ MySQL Connected');
+        
+        // Auto-create table if not exists
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS auctions (
+                id VARCHAR(255) PRIMARY KEY,
+                creator_address VARCHAR(255) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                asset_type VARCHAR(50),
+                min_bid DECIMAL(18, 4),
+                commit_deadline TIMESTAMP NULL,
+                reveal_deadline TIMESTAMP NULL,
+                phase TINYINT DEFAULT 0,
+                winner_address VARCHAR(255),
+                winning_bid DECIMAL(18, 4),
+                price_paid DECIMAL(18, 4),
+                finalized BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        console.log('✅ MySQL Connected & Schema Verified');
     } catch (err) {
         console.error('❌ DB Connection Error:', err.message);
     }
@@ -96,15 +117,35 @@ app.post('/api/bids', async (req, res) => {
 
 // Sync from Blockchain (Mocked for now, will be triggered by event listener)
 app.post('/api/sync/auction', async (req, res) => {
-    const { id, creator, title, description, asset_type, min_bid, commit_deadline, reveal_deadline } = req.body;
+    console.log('📥 Sync Request:', req.body);
+    const { id, title, description, category, minBid, commitDuration, revealDuration, account } = req.body;
+
+    // Validation
+    if (!id || !title || !account || !minBid) {
+        return res.status(400).json({ error: 'Missing required auction fields' });
+    }
+
     try {
-        if (!db) return res.json({ success: true, message: 'Synced (Mock Mode)' });
-        await db.execute(
-            'INSERT INTO auctions (id, creator_address, title, description, asset_type, min_bid, commit_deadline, reveal_deadline) VALUES (?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?)) ON DUPLICATE KEY UPDATE phase = phase',
-            [id, creator, title, description, asset_type, min_bid, commit_deadline, reveal_deadline]
-        );
+        if (!db) return res.json({ success: true, message: 'Mock Sync Success' });
+
+        const now = Math.floor(Date.now() / 1000);
+        const commitDeadline = now + parseInt(commitDuration);
+        const revealDeadline = commitDeadline + parseInt(revealDuration);
+
+        const query = `
+            INSERT INTO auctions 
+            (id, creator_address, title, description, asset_type, min_bid, commit_deadline, reveal_deadline) 
+            VALUES (?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?)) 
+            ON DUPLICATE KEY UPDATE title = VALUES(title)
+        `;
+
+        await db.execute(query, [
+            id, account, title, description, category, minBid, commitDeadline, revealDeadline
+        ]);
+
         res.json({ success: true });
     } catch (err) {
+        console.error('❌ Sync Error:', err.message);
         res.status(500).json({ error: err.message });
     }
 });

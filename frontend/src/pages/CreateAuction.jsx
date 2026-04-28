@@ -59,13 +59,15 @@ const CreateAuction = () => {
           // Sync with backend
           await axios.post('http://localhost:5000/api/sync/auction', {
               id: auctionId,
-              creator: account,
               title: formData.title,
               description: formData.description,
-              asset_type: formData.assetType,
-              min_bid: formData.minBid,
-              commit_deadline: Math.floor(Date.now() / 1000) + parseInt(formData.commitDuration),
-              reveal_deadline: Math.floor(Date.now() / 1000) + parseInt(formData.commitDuration) + parseInt(formData.revealDuration)
+              category: formData.assetType,
+              minBid: formData.minBid,
+              commitDuration: formData.commitDuration,
+              revealDuration: formData.revealDuration,
+              account: account
+          }, {
+              headers: { 'Content-Type': 'application/json' }
           });
           
           navigate('/dashboard');

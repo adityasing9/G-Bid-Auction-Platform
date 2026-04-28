@@ -9,12 +9,15 @@
     "node": "npx hardhat node"
   },
   "devDependencies": {
-    "hardhat": "^2.22.0",
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
-    "ethers": "^6.13.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
     "chai": "^4.3.0",
-    "@openzeppelin/contracts": "^5.0.0"
+    "ethers": "^6.13.0",
+    "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
   }
 }

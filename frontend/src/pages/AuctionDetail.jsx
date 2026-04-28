@@ -29,7 +29,9 @@ const AuctionDetail = () => {
 
   const fetchAuction = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/auctions/${id}`);
+      const res = await axios.get(`http://localhost:5000/api/auctions/${id}`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
       setAuction(res.data);
     } catch (err) {
       console.error(err);
@@ -45,6 +47,8 @@ const AuctionDetail = () => {
         asset_type: auction.asset_type,
         min_bid: parseFloat(auction.min_bid),
         user_budget: parseFloat(userBudget)
+      }, {
+        headers: { 'Content-Type': 'application/json' }
       });
       setAiData(res.data);
     } catch (err) {
@@ -62,19 +66,15 @@ const AuctionDetail = () => {
       const bidWei = ethers.parseEther(bidAmount);
       
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      
-      // Hash = keccak256(abi.encodePacked(amount, secret))
-      // ethers utility to match solidity: ethers.solidityPackedKeccak256(["uint256", "bytes32"], [bidWei, secret])
       const hash = ethers.solidityPackedKeccak256(["uint256", "bytes32"], [bidWei, secret]);
       
       const tx = await contract.commitBid(id, hash, { value: bidWei });
       await tx.wait();
       
-      // Save secret locally for reveal phase
-      localStorage.setItem(`secret_${id}_${account}`, secret);
-      localStorage.setItem(`amount_${id}_${account}`, bidAmount);
+      const storageKey = `bid_${id}_${account}`;
+      localStorage.setItem(storageKey, JSON.stringify({ bid: bidAmount, secret }));
       
-      alert("Bid committed successfully! Secret saved locally.");
+      alert(`Bid committed! SAVE THIS SECRET: ${secret}`);
       fetchAuction();
     } catch (err) {
       console.error(err);
@@ -88,19 +88,25 @@ const AuctionDetail = () => {
     if (!signer) return alert("Connect wallet");
     setStatus('revealing');
     try {
-      const secret = localStorage.getItem(`secret_${id}_${account}`);
-      const amount = localStorage.getItem(`amount_${id}_${account}`);
+      const storageKey = `bid_${id}_${account}`;
+      const storedData = localStorage.getItem(storageKey);
       
-      if (!secret || !amount) {
-          alert("Secret not found in local storage. Please enter manually.");
-          // Fallback to form if needed
-          return;
+      let bidToReveal, secretToReveal;
+
+      if (storedData) {
+        const parsed = JSON.parse(storedData);
+        bidToReveal = parsed.bid;
+        secretToReveal = parsed.secret;
+      } else {
+        bidToReveal = window.prompt("Secret not found in local storage. Enter your bid amount (ETH):");
+        secretToReveal = window.prompt("Enter your secret:");
+        if (!bidToReveal || !secretToReveal) return;
       }
 
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      const bidWei = ethers.parseEther(amount);
+      const bidWei = ethers.parseEther(bidToReveal.toString());
       
-      const tx = await contract.revealBid(id, bidWei, secret);
+      const tx = await contract.revealBid(id, bidWei, secretToReveal);
       await tx.wait();
       
       alert("Bid revealed successfully!");
