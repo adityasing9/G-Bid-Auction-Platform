@@ -1,111 +1,123 @@
-# 💎 BidCrypt: Decentralized Sealed-Bid Auction Platform
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,50:203a43,100:2c5364&height=220&section=header&text=BidCrypt%20Auction%20Platform&fontSize=42&fontColor=00ffe1&animation=fadeIn&fontAlignY=35"/>
+</p>
 
-![BidCrypt Banner](https://img.shields.io/badge/Status-Live_on_Sepolia-success?style=for-the-badge)
-![Ethereum](https://img.shields.io/badge/Ethereum-3C3C3D?style=for-the-badge&logo=Ethereum&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?color=00FFE1&size=22&center=true&vCenter=true&width=650&lines=Decentralized+Sealed-Bid+Auctions;Commit-Reveal+Cryptography;Manipulation-Free+Bidding;Built+with+React+%2B+Solidity"/>
+</p>
 
-BidCrypt is a next-generation decentralized application (dApp) that utilizes a **Commit-Reveal cryptographic scheme** to conduct secure, manipulation-free auctions on the Ethereum blockchain.
-
-Traditional transparent auctions are susceptible to front-running, bid-sniping, and market manipulation. BidCrypt solves this by allowing users to submit mathematically concealed bids that are impossible to decrypt until the designated reveal phase.
-
----
-
-## 🏗️ Architecture & Tech Stack
-
-This project is a fully robust, production-ready Web3 ecosystem distributed across specialized platforms:
-
-### 1. Smart Contracts (Blockchain Layer)
-*   **Language:** Solidity
-*   **Network:** Ethereum Sepolia Testnet
-*   **Core Logic:** Handles the locking of ETH deposits, verifying `keccak256` hash commitments, and executing the final winner determination.
-
-### 2. Frontend (Client Layer)
-*   **Framework:** React.js + Vite
-*   **Styling:** Tailwind CSS (Modern "Midnight/Cyber" Glassmorphism UI)
-*   **Web3 Integration:** `ethers.js` (v6) + MetaMask
-*   **Hosting:** **Vercel**
-
-### 3. Backend (API & Sync Layer)
-*   **Environment:** Node.js + Express
-*   **Hosting:** **Render.com**
-*   **Functionality:** Acts as an indexer and caching layer, syncing on-chain auction data (titles, descriptions, categories, and deadlines) to provide the frontend with lightning-fast dashboard loading without hammering the RPC node.
-
-### 4. Database (Storage Layer)
-*   **Provider:** **Supabase (PostgreSQL)**
-*   **Usage:** Relational mapping of Active Auctions, Bids, and Leaderboard statistics.
+<p align="center">
+  <img src="https://img.shields.io/badge/Solidity-363636?style=flat-square&logo=solidity&logoColor=white"/>
+  <img src="https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB"/>
+  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white"/>
+</p>
 
 ---
 
-## 🔐 The Commit-Reveal Mechanism Explained
+## 🌐 Live App
 
-BidCrypt ensures fairness through a strict two-phase process:
+<p align="center">
+  🔗 https://bidcrypt.vercel.app
+</p>
 
-1.  **Commit Phase:** Bidders decide on a bid amount and generate a secure random `secret`. The frontend hashes the bid and the secret together: `keccak256(abi.encodePacked(bidAmount, secret))`. Only this mathematical hash and the ETH deposit are sent to the blockchain. **Nobody (not even the creator) knows the actual bid amount.**
-2.  **Reveal Phase:** Once the commit phase ends, bidders submit their raw `bidAmount` and `secret` back to the contract. The contract re-hashes them. If the new hash matches the committed hash, the bid is validated and unsealed.
-3.  **Finalization:** The highest valid revealed bid wins the asset. All losing deposits are refunded. If a user fails to reveal their bid, their deposit is forfeited to prevent griefing.
-
----
-
-## 🚀 Live Deployment
-
-The platform is fully configured for production deployment:
-*   **Vercel (Frontend):** Configured with `vercel.json` for seamless React Router SPAs.
-*   **Render (Backend):** Connected directly to GitHub for continuous deployment.
-*   **Supabase (DB):** Production PostgreSQL instance serving the `auctions` and `bids` relational schema.
+<p align="center">
+  <a href="https://bidcrypt.vercel.app">
+    <img src="https://img.shields.io/badge/Open%20in%20Browser-00C9FF?style=for-the-badge&logo=google-chrome&logoColor=black"/>
+  </a>
+</p>
 
 ---
 
-## 💻 Local Developer Setup
+## 🧠 Overview
 
-If you want to run BidCrypt locally, follow these steps:
+BidCrypt is a **next-generation decentralized application (dApp)** that utilizes a **Commit-Reveal cryptographic scheme** to conduct secure, manipulation-free auctions on the Ethereum blockchain.
 
-### Prerequisites
-*   Node.js (v18+)
-*   MetaMask Browser Extension (configured to Sepolia Testnet)
-*   A Supabase Account
+It solves front-running and bid-sniping by mathematically concealing bids until the designated reveal phase.
 
-### 1. Backend Setup
+---
+
+## ✨ Features
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Commit--Reveal_Cryptography-00ffe1?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Anti--Front--Running-00c9ff?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Cloud_Data_Sync-ffffff?style=for-the-badge"/>
+</p>
+
+### 🔐 Cryptographic Sealing
+
+* `solidityPackedKeccak256` hashing
+* Local browser secret persistence
+
+### ⚖️ Fair Determination
+
+* Automated winner selection
+* Pull-over-push refund system
+
+### 📊 Real-Time Dashboard
+
+* Render + Supabase indexer
+* Live Leaderboard & Active Auctions
+
+### 📈 Seamless UI
+
+* Modern glassmorphism design
+* MetaMask wallet integration
+
+---
+
+## 🛠 Tech Stack
+
+```text
+Blockchain → Solidity (Sepolia Testnet)
+Frontend   → React + Vite + TailwindCSS
+Backend    → Node.js + Express
+Database   → Supabase (PostgreSQL)
+```
+
+---
+
+## ⚙️ Setup
+
 ```bash
+git clone https://github.com/adityasing9/G-Bid-Auction-Platform.git
+cd G-Bid-Auction-Platform
+
+# Backend Setup
 cd backend
 npm install
+npm run dev
+
+# Frontend Setup
+cd ../frontend
+npm install
+npm run dev
 ```
-Create a `.env` file in the `backend` directory:
+
+---
+
+## 🔐 Secrets (Backend)
+
 ```env
 PORT=5000
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_KEY=your_supabase_anon_key
+SUPABASE_URL="your_supabase_url"
+SUPABASE_KEY="your_supabase_anon_key"
 ```
-Start the server:
-```bash
-npm run dev
-```
-
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-```
-Start the Vite development server:
-```bash
-npm run dev
-```
-
-### 3. Smart Contract Deployment (Optional)
-If you wish to deploy your own instance of the contract:
-```bash
-cd contracts
-npm install
-npx hardhat run scripts/deploy.js --network sepolia
-```
-*Note: Ensure you update `CONTRACT_ADDRESS` in `frontend/src/contracts/contractData.js` if you deploy a new contract.*
 
 ---
 
-## 🛡️ Security Features
-*   **Reentrancy Protection:** Utilizes OpenZeppelin's `ReentrancyGuard` to prevent recursive withdrawal attacks.
-*   **Pull-Over-Push Payments:** Refunds must be actively withdrawn by users, preventing malicious contracts from halting the auction via fallback execution reverts.
-*   **Local Storage Persistence:** Cryptographic secrets are safely stored in the user's browser `localStorage` during the commit phase, ensuring they are not lost before the reveal phase.
+## 👨💻 Author
+
+Aditya Singh
+https://github.com/adityasing9
 
 ---
-*Built for the future of decentralized asset exchange.*
+
+<p align="center">
+  ⭐ Star this repo if you found it useful
+</p>
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,50:203a43,100:2c5364&height=120&section=footer"/>
+</p>
