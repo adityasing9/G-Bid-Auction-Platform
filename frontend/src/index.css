@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-white font-sans selection:bg-accent-yellow selection:text-black;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+  }
+  
+  .glass-card {
+    @apply glass hover:border-accent-yellow/50 transition-all duration-300;
+  }
+  
+  .btn-neon-yellow {
+    @apply px-6 py-3 bg-accent-yellow text-black font-bold rounded-lg hover:shadow-neon-yellow hover:scale-105 active:scale-95 transition-all;
+  }
+
+  .btn-neon-green {
+    @apply px-6 py-3 bg-accent-green text-black font-bold rounded-lg hover:shadow-neon-green hover:scale-105 active:scale-95 transition-all;
+  }
+
+  .neon-border-yellow {
+    @apply border border-accent-yellow/30 shadow-neon-yellow;
+  }
+
+  .neon-border-green {
+    @apply border border-accent-green/30 shadow-neon-green;
+  }
+
+  .input-glass {
+    @apply bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-accent-yellow transition-all;
+  }
+}
+
+/* Custom Animations */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.animate-glow {
+  animation: pulse-glow 2s infinite;
+}
