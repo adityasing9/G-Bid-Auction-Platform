@@ -34,7 +34,7 @@ function App() {
       </main>
 
       <footer className="border-t border-white/10 py-8 text-center text-white/50 text-sm">
-        <p>© 2026 G-BID DECENTRALIZED AUCTIONS. BUILT FOR THE FUTURE.</p>
+        <p>© 2026 BIDCRYPT DECENTRALIZED PLATFORM. BUILT FOR THE FUTURE.</p>
       </footer>
     </div>
   );

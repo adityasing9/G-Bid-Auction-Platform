@@ -11,10 +11,10 @@ const Navbar = () => {
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-10 h-10 bg-accent-yellow rounded-lg flex items-center justify-center">
-            <span className="text-black font-black text-xl">G</span>
+            <span className="text-black font-black text-xl">B</span>
           </div>
           <span className="font-black text-2xl tracking-tighter uppercase italic">
-            G-Bid<span className="text-accent-yellow">.</span>
+            BidCrypt<span className="text-accent-yellow">.</span>
           </span>
         </Link>
 

@@ -1,6 +1,6 @@
-# 🏁 G-Bid: Decentralized Sealed-Bid Auction Platform
+# 🏁 BidCrypt: Decentralized Sealed-Bid Auction Platform
 
-G-Bid is a production-ready, decentralized auction platform designed to prevent front-running and encourage truthful bidding through a **Commit-Reveal mechanism** and **Vickrey (Second-Price) logic**.
+BidCrypt is a production-ready, decentralized auction platform designed to prevent front-running and encourage truthful bidding through a **Commit-Reveal mechanism** and **Vickrey (Second-Price) logic**.
 
 ---
 
@@ -80,4 +80,4 @@ npm run dev
 
 ---
 
-Built with ❤️ for the G-Bid Hackathon.
+Built with ❤️ for the BidCrypt Hackathon.

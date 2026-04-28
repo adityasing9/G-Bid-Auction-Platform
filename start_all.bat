@@ -1,5 +1,5 @@
 @echo off
-echo Starting G-Bid Platform Services...
+echo Starting BidCrypt Platform Services...
 
 start cmd /k "cd contracts && npx hardhat node"
 timeout /t 5

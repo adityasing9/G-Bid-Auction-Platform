@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Zap, BarChart3 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Zap, BarChart3, Trophy } from 'lucide-react';
 
 const LandingPage = () => {
   return (
