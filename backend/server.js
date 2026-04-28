@@ -1,9 +1,9 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2/promise');
 const cors = require('cors');
 const morgan = require('morgan');
 const { ethers } = require('ethers');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -13,41 +13,16 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// DB Connection
-let db;
-async function initDB() {
-    try {
-        db = await mysql.createConnection({
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'auction_db'
-        });
-        
-        // Auto-create table if not exists
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS auctions (
-                id VARCHAR(255) PRIMARY KEY,
-                creator_address VARCHAR(255) NOT NULL,
-                title VARCHAR(255) NOT NULL,
-                description TEXT,
-                asset_type VARCHAR(50),
-                min_bid DECIMAL(18, 4),
-                commit_deadline TIMESTAMP NULL,
-                reveal_deadline TIMESTAMP NULL,
-                phase TINYINT DEFAULT 0,
-                winner_address VARCHAR(255),
-                winning_bid DECIMAL(18, 4),
-                price_paid DECIMAL(18, 4),
-                finalized BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+// DB Connection - Supabase
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-        console.log('✅ MySQL Connected & Schema Verified');
-    } catch (err) {
-        console.error('❌ DB Connection Error:', err.message);
-    }
+let supabase;
+if (SUPABASE_URL && SUPABASE_KEY) {
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Connected to Supabase');
+} else {
+    console.warn('⚠️ Supabase URL or Key is missing. Running in Mock Mode.');
 }
 
 // Routes
@@ -56,7 +31,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
 // Auctions API
 app.get('/api/auctions', async (req, res) => {
     try {
-        if (!db) {
+        if (!supabase) {
             // Mock data for demo if DB is not connected
             return res.json([{
                 id: 0,
@@ -70,8 +45,13 @@ app.get('/api/auctions', async (req, res) => {
                 phase: 'Commit'
             }]);
         }
-        const [rows] = await db.execute('SELECT * FROM auctions ORDER BY created_at DESC');
-        res.json(rows);
+        const { data, error } = await supabase
+            .from('auctions')
+            .select('*')
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+        res.json(data || []);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -79,7 +59,7 @@ app.get('/api/auctions', async (req, res) => {
 
 app.get('/api/auctions/:id', async (req, res) => {
     try {
-        if (!db) {
+        if (!supabase) {
             return res.json({
                 id: req.params.id,
                 creator_address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
@@ -92,9 +72,17 @@ app.get('/api/auctions/:id', async (req, res) => {
                 phase: 'Commit'
             });
         }
-        const [rows] = await db.execute('SELECT * FROM auctions WHERE id = ?', [req.params.id]);
-        if (rows.length === 0) return res.status(404).json({ error: 'Not found' });
-        res.json(rows[0]);
+        const { data, error } = await supabase
+            .from('auctions')
+            .select('*')
+            .eq('id', req.params.id)
+            .single();
+            
+        if (error) {
+            if (error.code === 'PGRST116') return res.status(404).json({ error: 'Not found' }); // No rows returned
+            throw error;
+        }
+        res.json(data);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -104,18 +92,25 @@ app.get('/api/auctions/:id', async (req, res) => {
 app.post('/api/bids', async (req, res) => {
     const { auction_id, bidder_address, commit_hash, deposit_amount } = req.body;
     try {
-        if (!db) return res.json({ message: 'Bid recorded (Mock Mode)' });
-        await db.execute(
-            'INSERT INTO bids (auction_id, bidder_address, commit_hash, deposit_amount) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE commit_hash = ?, deposit_amount = ?',
-            [auction_id, bidder_address, commit_hash, deposit_amount, commit_hash, deposit_amount]
-        );
+        if (!supabase) return res.json({ message: 'Bid recorded (Mock Mode)' });
+        
+        const { error } = await supabase
+            .from('bids')
+            .upsert({
+                auction_id,
+                bidder_address,
+                commit_hash,
+                deposit_amount
+            }, { onConflict: 'auction_id, bidder_address' });
+            
+        if (error) throw error;
         res.json({ message: 'Bid recorded' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Sync from Blockchain (Mocked for now, will be triggered by event listener)
+// Sync from Blockchain
 app.post('/api/sync/auction', async (req, res) => {
     console.log('📥 Sync Request:', req.body);
     const { id, title, description, category, minBid, commitDuration, revealDuration, account } = req.body;
@@ -126,23 +121,30 @@ app.post('/api/sync/auction', async (req, res) => {
     }
 
     try {
-        if (!db) return res.json({ success: true, message: 'Mock Sync Success' });
+        if (!supabase) return res.json({ success: true, message: 'Mock Sync Success' });
 
         const now = Math.floor(Date.now() / 1000);
         const commitDeadline = now + parseInt(commitDuration);
         const revealDeadline = commitDeadline + parseInt(revealDuration);
 
-        const query = `
-            INSERT INTO auctions 
-            (id, creator_address, title, description, asset_type, min_bid, commit_deadline, reveal_deadline) 
-            VALUES (?, ?, ?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?)) 
-            ON DUPLICATE KEY UPDATE title = VALUES(title)
-        `;
+        // Convert epoch timestamps to ISO format for Postgres TIMESTAMPTZ
+        const commitISO = new Date(commitDeadline * 1000).toISOString();
+        const revealISO = new Date(revealDeadline * 1000).toISOString();
 
-        await db.execute(query, [
-            id, account, title, description, category, minBid, commitDeadline, revealDeadline
-        ]);
+        const { error } = await supabase
+            .from('auctions')
+            .upsert({
+                id,
+                creator_address: account,
+                title,
+                description,
+                asset_type: category,
+                min_bid: minBid,
+                commit_deadline: commitISO,
+                reveal_deadline: revealISO
+            }, { onConflict: 'id' });
 
+        if (error) throw error;
         res.json({ success: true });
     } catch (err) {
         console.error('❌ Sync Error:', err.message);
@@ -150,25 +152,7 @@ app.post('/api/sync/auction', async (req, res) => {
     }
 });
 
-// Leaderboard
-app.get('/api/leaderboard', async (req, res) => {
-    try {
-        if (!db) {
-            return res.json([
-                { wallet_address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', wins: 12, total_bids: 18, win_rate: 66.7 },
-                { wallet_address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', wins: 8, total_bids: 14, win_rate: 57.1 },
-                { wallet_address: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', wins: 5, total_bids: 11, win_rate: 45.5 },
-                { wallet_address: '0x90F79bf6EB2c4f870365E785982E1f101E93b906', wins: 3, total_bids: 9, win_rate: 33.3 },
-                { wallet_address: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65', wins: 2, total_bids: 7, win_rate: 28.6 }
-            ]);
-        }
-        const [rows] = await db.execute('SELECT * FROM leaderboard LIMIT 10');
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-initDB().then(() => {
-    app.listen(port, () => console.log(`🚀 Backend running on port ${port}`));
+// Start Server
+app.listen(port, () => {
+    console.log(`🚀 Backend running on port ${port}`);
 });
