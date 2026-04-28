@@ -29,7 +29,7 @@ const AuctionDetail = () => {
 
   const fetchAuction = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/auctions/${id}`, {
+      const res = await axios.get(`https://bidcrypt.onrender.com/api/auctions/${id}`, {
         headers: { 'Content-Type': 'application/json' }
       });
       setAuction(res.data);

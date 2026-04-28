@@ -57,7 +57,7 @@ const CreateAuction = () => {
           const auctionId = parsedLog.args.auctionId.toString();
           
           // Sync with backend
-          await axios.post('http://localhost:5000/api/sync/auction', {
+          await axios.post('https://bidcrypt.onrender.com/api/sync/auction', {
               id: auctionId,
               title: formData.title,
               description: formData.description,

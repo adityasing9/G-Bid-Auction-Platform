@@ -10,7 +10,7 @@ const Leaderboard = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/leaderboard', {
+        const res = await axios.get('https://bidcrypt.onrender.com/api/leaderboard', {
           headers: { 'Content-Type': 'application/json' }
         });
         setLeaders(res.data);
